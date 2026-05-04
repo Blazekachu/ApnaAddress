@@ -43,7 +43,9 @@ function generateKeypair(seedBytes) {
   }
 }
 
-// ── Deterministic seed derivation for passphrase mode ──
+// ── Seed derivation for passphrase mode ──
+// Uses SHA256(baseSeed + counter + random) so the final key is not predictable
+// even if the passphrase is known. The random bytes ensure cryptographic strength.
 let baseSeed = null;
 let counter = 0n;
 
@@ -56,7 +58,8 @@ function nextSeed() {
   const counterBuf = Buffer.alloc(8);
   counterBuf.writeBigUInt64BE(counter);
   counter++;
-  return crypto.createHash('sha256').update(Buffer.concat([baseSeed, counterBuf])).digest();
+  const random = crypto.randomBytes(16);
+  return crypto.createHash('sha256').update(Buffer.concat([baseSeed, counterBuf, random])).digest();
 }
 
 let attempts = 0;
