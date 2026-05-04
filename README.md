@@ -20,7 +20,7 @@ Vanity address generator for Bitcoin, Ethereum, and Solana. Find custom wallet a
 ## Setup
 
 ```bash
-git clone https://github.com/YourUsername/ApnaAddress.git
+git clone https://github.com/Blazekachu/ApnaAddress.git
 cd ApnaAddress
 
 # Install dependencies for the chain you want
@@ -111,21 +111,59 @@ node search.js --prefix dex --passphrase "your secret"
 
 You can combine `--prefix` and `--suffix` to match both simultaneously.
 
-## Time Estimates
+## What Can This Tool Do?
 
-The tool shows estimated time before starting. General guide for **1 CPU thread**:
+Estimated times by pattern length and CPU threads. These are averages — actual time varies with luck.
 
-| Pattern Length | ETH (~15k keys/sec) | BTC (~15k keys/sec) | SOL (~2.5k keys/sec) |
-|---------------|---------------------|---------------------|----------------------|
-| 2 chars | instant | instant | ~1s |
-| 3 chars | ~0.1s | ~6s | ~39s |
-| 4 chars | ~2s | ~6min | ~37min |
-| 5 chars | ~35s | ~5.5h | ~1.5 days |
-| 6 chars | ~9min | ~13 days | ~87 days |
+### Ethereum (hex charset, ~15k keys/sec per thread)
 
-Combining prefix + suffix multiplies the search spaces together.
+| Pattern | 1 thread | 4 threads | 8 threads | 16 threads |
+|---------|----------|-----------|-----------|------------|
+| 2 chars | instant | instant | instant | instant |
+| 3 chars | instant | instant | instant | instant |
+| 4 chars | ~2s | instant | instant | instant |
+| 5 chars | ~35s | ~9s | ~4s | ~2s |
+| 6 chars | ~9 min | ~2 min | ~1 min | ~34s |
+| 7 chars | ~2.5 hrs | ~37 min | ~19 min | ~9 min |
+| 8 chars | ~1.6 days | ~10 hrs | ~5 hrs | ~2.5 hrs |
 
-More threads = proportionally faster. 8 threads ≈ 8x speed.
+### Bitcoin (base58 charset, ~15k keys/sec per thread)
+
+| Pattern | 1 thread | 4 threads | 8 threads | 16 threads |
+|---------|----------|-----------|-----------|------------|
+| 2 chars | instant | instant | instant | instant |
+| 3 chars | ~6s | ~2s | instant | instant |
+| 4 chars | ~6 min | ~1.5 min | ~45s | ~22s |
+| 5 chars | ~5.5 hrs | ~1.4 hrs | ~41 min | ~21 min |
+| 6 chars | ~13 days | ~3.3 days | ~1.6 days | ~20 hrs |
+
+### Solana (base58 charset, ~2.5k keys/sec per thread)
+
+| Pattern | 1 thread | 4 threads | 8 threads | 16 threads |
+|---------|----------|-----------|-----------|------------|
+| 2 chars | ~1s | instant | instant | instant |
+| 3 chars | ~39s | ~10s | ~5s | ~2s |
+| 4 chars | ~37 min | ~9 min | ~5 min | ~2 min |
+| 5 chars | ~1.5 days | ~9 hrs | ~4.5 hrs | ~2.2 hrs |
+| 6 chars | ~87 days | ~22 days | ~11 days | ~5.4 days |
+
+### Prefix + Suffix Combined
+
+Search spaces multiply. Example: 3-char prefix + 2-char suffix = same difficulty as 5 chars.
+
+## Need More Speed? Use GPU Tools
+
+This tool is CPU-only. For heavy patterns (6+ chars on BTC/SOL, 8+ on ETH), a GPU is significantly faster.
+
+| Tool | Chain | GPU Speed (RTX 4090) | vs Our CPU (8 threads) |
+|------|-------|---------------------|----------------------|
+| [VanitySearch](https://github.com/JeanLucPons/VanitySearch) (C++) | BTC | ~1B keys/sec | ~8,300x faster |
+| [Profanity2](https://github.com/1inch/profanity2) (OpenCL) | ETH | ~1.5B keys/sec | ~12,500x faster |
+| [Solana Vanity](https://github.com/nicholasgasior/solana-vanity-grinder) (Rust) | SOL | ~10M keys/sec | ~500x faster |
+
+**When to use GPU tools:** if the estimated time on this tool exceeds a few hours, a GPU tool will get the job done in seconds or minutes.
+
+**When this tool is enough:** patterns up to 5 chars (ETH/BTC) or 4 chars (SOL) finish quickly on any modern CPU.
 
 ## Passphrase Mode
 
