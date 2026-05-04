@@ -1,0 +1,10 @@
+{
+  "name": "vanitysearch-eth",
+  "version": "1.0.0",
+  "description": "Optimized Ethereum vanity address generator",
+  "main": "search.js",
+  "dependencies": {
+    "keccak256": "^1.0.6",
+    "tiny-secp256k1": "^2.2.3"
+  }
+}

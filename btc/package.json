@@ -1,0 +1,10 @@
+{
+  "name": "vanity-search",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "tiny-secp256k1": "^2.2.3",
+    "bitcoinjs-lib": "^6.1.7",
+    "ecpair": "^2.1.0"
+  }
+}
