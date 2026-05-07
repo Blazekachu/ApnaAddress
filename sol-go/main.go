@@ -87,8 +87,52 @@ func encodeKeypairBase58(priv ed25519.PrivateKey) string {
 	return encodeBase58(priv)
 }
 
-func matches(addr, prefix, suffix string) bool {
-	return (prefix == "" || strings.HasPrefix(addr, prefix)) && (suffix == "" || strings.HasSuffix(addr, suffix))
+// matchesPubkeyBase58 checks prefix/suffix without allocating an address string on every miss.
+func matchesPubkeyBase58(src []byte, prefix, suffix string) bool {
+	zeros := 0
+	for zeros < len(src) && src[zeros] == 0 {
+		zeros++
+	}
+
+	var b58 [45]byte // enough for 32-byte Solana public keys
+	length := 0
+	for _, b := range src[zeros:] {
+		carry := int(b)
+		for i := 0; i < length; i++ {
+			carry += int(b58[i]) << 8
+			b58[i] = byte(carry % 58)
+			carry /= 58
+		}
+		for carry > 0 {
+			b58[length] = byte(carry % 58)
+			length++
+			carry /= 58
+		}
+	}
+
+	addrLen := zeros + length
+	charAt := func(pos int) byte {
+		if pos < zeros {
+			return '1'
+		}
+		return alphabet[b58[length-1-(pos-zeros)]]
+	}
+
+	if len(prefix) > addrLen || len(suffix) > addrLen {
+		return false
+	}
+	for i := 0; i < len(prefix); i++ {
+		if charAt(i) != prefix[i] {
+			return false
+		}
+	}
+	start := addrLen - len(suffix)
+	for i := 0; i < len(suffix); i++ {
+		if charAt(start+i) != suffix[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func worker(ctx context.Context, id int, prefix, suffix string, passSeed []byte, attempts *atomic.Uint64, found chan<- result) {
@@ -145,10 +189,10 @@ func worker(ctx context.Context, id int, prefix, suffix string, passSeed []byte,
 
 		priv := ed25519.NewKeyFromSeed(seed[:])
 		pub := priv.Public().(ed25519.PublicKey)
-		addr := encodeBase58(pub)
 		localAttempts++
 
-		if matches(addr, prefix, suffix) {
+		if matchesPubkeyBase58(pub, prefix, suffix) {
+			addr := encodeBase58(pub)
 			cur := flush()
 			select {
 			case found <- result{address: addr, seed: seed, priv: priv, attempt: cur}:
