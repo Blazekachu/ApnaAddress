@@ -1,0 +1,11 @@
+[package]
+name = "btcvanity-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+secp256k1 = { version = "0.29", features = ["rand"] }
+sha2 = "0.10"
+ripemd = "0.1"
+bs58 = "0.5"
+rand = "0.8"

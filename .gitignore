@@ -3,3 +3,4 @@ node_modules/
 # Build artifacts
 sol-go/solvanity
 sol-rs/target/
+btc-rs/target/
