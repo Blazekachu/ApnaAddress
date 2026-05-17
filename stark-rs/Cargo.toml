@@ -1,0 +1,14 @@
+[package]
+name = "starkvanity-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+starknet-crypto = "0.8"
+starknet-core = "0.16"
+starknet-types-core = "1.0"
+rand = "0.8"
+sha2 = "0.10"
+bip39 = "2.2"
+bip32 = "0.5"
+hmac = "0.12"

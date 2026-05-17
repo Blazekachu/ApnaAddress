@@ -4,3 +4,4 @@ node_modules/
 sol-go/solvanity
 sol-rs/target/
 btc-rs/target/
+stark-rs/target/

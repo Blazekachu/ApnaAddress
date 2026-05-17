@@ -1,6 +1,6 @@
 # Apna Address
 
-Vanity address generator for Bitcoin, Ethereum, and Solana. Find custom wallet addresses with your chosen prefix, suffix, or both.
+Vanity address generator for Bitcoin, Ethereum, Solana, and Starknet. Find custom wallet addresses with your chosen prefix, suffix, or both.
 
 **Runs entirely offline. Nothing is saved to disk. Keys only appear in your terminal.**
 
@@ -11,11 +11,13 @@ Vanity address generator for Bitcoin, Ethereum, and Solana. Find custom wallet a
 | Bitcoin | `btc/` | Legacy, Nested SegWit, Native SegWit, Taproot | Incremental keygen (point addition) |
 | Ethereum | `eth/` | EVM (EIP-55 checksum) | Incremental keygen (same secp256k1 curve) |
 | Solana | `sol/` | Ed25519 base58 | Fresh keypair per attempt |
+| Starknet | `stark-rs/` | Ready (ArgentX), Braavos, Xverse | Key mode + 12-word seed phrase mode |
 
 ## Requirements
 
-- Node.js v18+
-- Run `npm install` inside each chain folder before use
+- Node.js v18+ (for BTC, ETH, SOL JS versions)
+- Rust (for `btc-rs/`, `sol-rs/`, `stark-rs/`)
+- Run `npm install` inside each JS chain folder before use
 
 ## Setup
 
@@ -27,6 +29,11 @@ cd ApnaAddress
 cd btc && npm install && cd ..
 cd eth && npm install && cd ..
 cd sol && npm install && cd ..
+
+# Rust chains (build once)
+cd btc-rs && cargo build --release && cd ..
+cd sol-rs && cargo build --release && cd ..
+cd stark-rs && cargo build --release && cd ..
 ```
 
 ## Usage
@@ -99,6 +106,39 @@ node search.js --prefix dex --passphrase "your secret"
 
 **Charset:** Base58 (1-9, A-H, J-N, P-Z, a-k, m-z). Case-sensitive.
 
+### Starknet
+
+```bash
+cd stark-rs
+cargo build --release
+
+# Ready (ArgentX) wallet — private key mode (faster)
+./target/release/starkvanity-rs --wallet argent --prefix dead
+./target/release/starkvanity-rs --wallet argent --suffix cafe
+
+# Ready — 12-word seed phrase mode (import via seed restore)
+./target/release/starkvanity-rs --wallet argent --prefix dead --output seed
+
+# Braavos wallet
+./target/release/starkvanity-rs --wallet braavos --prefix beef
+./target/release/starkvanity-rs --wallet braavos --prefix beef --output seed
+
+# Xverse wallet (Starknet address)
+./target/release/starkvanity-rs --wallet xverse --prefix face
+./target/release/starkvanity-rs --wallet xverse --prefix face --output seed
+
+# More threads for speed
+./target/release/starkvanity-rs --wallet argent --prefix dead --threads 16
+```
+
+**Wallets:** `argent` / `ready` (Ready/ArgentX), `braavos`, `xverse`
+
+**Output modes:** `key` (default, faster) or `seed` (12-word mnemonic, import via seed restore)
+
+**Charset:** Hex (0-9, a-f). Starknet addresses are `0x` + 64 hex chars.
+
+**Hex words you can spell:** `dead`, `beef`, `cafe`, `face`, `babe`, `fade`, `deed`, `feed`, `da7a`, `decade`, `facade`, `defaced`
+
 ## Options (all chains)
 
 | Option | Description |
@@ -108,6 +148,8 @@ node search.js --prefix dex --passphrase "your secret"
 | `--passphrase "x"` | Derive starting key from SHA256 of passphrase |
 | `--threads N` | Number of CPU threads (default: cores - 1) |
 | `--checksum` | ETH only: EIP-55 case-sensitive matching |
+| `--wallet <type>` | Starknet only: argent, braavos, or xverse |
+| `--output <mode>` | Starknet only: key (default) or seed (12-word mnemonic) |
 
 You can combine `--prefix` and `--suffix` to match both simultaneously.
 
@@ -146,6 +188,16 @@ Estimated times by pattern length and CPU threads. These are averages — actual
 | 4 chars | ~37 min | ~9 min | ~5 min | ~2 min |
 | 5 chars | ~1.5 days | ~9 hrs | ~4.5 hrs | ~2.2 hrs |
 | 6 chars | ~87 days | ~22 days | ~11 days | ~5.4 days |
+
+### Starknet (hex charset, 8 threads)
+
+| Pattern | Key mode | Seed mode |
+|---------|----------|-----------|
+| 2 chars | instant | instant |
+| 3 chars | ~1s | ~15s |
+| 4 chars | ~6s | ~4 min |
+| 5 chars | ~1.5 min | ~1 hr |
+| 6 chars | ~25 min | ~16 hrs |
 
 ### Prefix + Suffix Combined
 
